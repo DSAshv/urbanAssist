@@ -10,7 +10,7 @@ export default defineConfig({
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
         name: 'Community Problem Reporting System',
-        short_name: 'CivicCare',
+        short_name: 'UrbanAssist',
         description: 'Report and track community issues',
         theme_color: '#2563EB',
         background_color: '#ffffff',
@@ -53,6 +53,7 @@ export default defineConfig({
         secure: false,
         ws: true
       }
-    }
+    },
+    host: true
   }
 });

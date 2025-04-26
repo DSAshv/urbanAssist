@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import apiRoutes from './api/index.js';
+import apiRouter from './api/index.js';
 
 // Initialize dotenv
 dotenv.config();
@@ -38,7 +38,7 @@ app.use(cookieParser());
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // API routes
-app.use('/api', apiRoutes);
+app.use('/api', apiRouter);
 
 // Serve static files in production
 if (process.env.NODE_ENV === 'production') {

@@ -14,7 +14,7 @@ const LandingPage: React.FC = () => {
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center">
               <Shield className="h-8 w-8 text-blue-600" />
-              <span className="ml-2 text-xl font-bold text-gray-900">CivicCare</span>
+              <span className="ml-2 text-xl font-bold text-gray-900">UrbanAssist</span>
             </div>
             <div className="flex items-center space-x-4">
               <Link
@@ -131,7 +131,7 @@ const LandingPage: React.FC = () => {
         <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <p className="text-base text-gray-400">
-              © 2025 CivicCare. All rights reserved.
+              © 2025 UrbanAssist. All rights reserved.
             </p>
           </div>
         </div>
