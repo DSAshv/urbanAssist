@@ -72,7 +72,7 @@ export const register = async (req, res) => {
         <h1>Welcome to Community Problem Reporting System!</h1>
         <p>Hi ${user.firstName},</p>
         <p>Thank you for registering with our community problem reporting system. You can now report problems in your community.</p>
-        <p>Best regards,<br>The Community Team</p>
+        <p>Best regards,<br>The UrbanAssist Team</p>
       `
     }).catch(err => console.error('Welcome email error:', err));
 

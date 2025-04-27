@@ -62,7 +62,7 @@ export const emailTemplates = {
           <li>Communicate with administrators</li>
         </ul>
         <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
-        <p>Best regards,<br>The Community Team</p>
+        <p>Best regards,<br>The UrbanAssist Team</p>
       </div>
     `
   }),
@@ -80,7 +80,7 @@ export const emailTemplates = {
         ${comment ? `<p><strong>Comment:</strong> ${comment}</p>` : ''}
         <p>You can view more details by logging into your account dashboard.</p>
         <p>Thank you for your patience.</p>
-        <p>Best regards,<br>The Community Team</p>
+        <p>Best regards,<br>The UrbanAssist Team</p>
       </div>
     `
   }),
@@ -96,7 +96,7 @@ export const emailTemplates = {
         <p><strong>Title:</strong> ${title}</p>
         <p><strong>Comment:</strong> ${comment}</p>
         <p>You can log in to your account dashboard to respond or check for updates.</p>
-        <p>Best regards,<br>The Community Team</p>
+        <p>Best regards,<br>The UrbanAssist Team</p>
       </div>
     `
   })

@@ -53,7 +53,7 @@ export const createComplaint = async (req, res) => {
         <p><strong>Status:</strong> ${complaint.getStatusText()}</p>
         <p>You can track the status of your complaint through your account dashboard.</p>
         <p>Thank you for helping improve our community.</p>
-        <p>Best regards,<br>The Community Team</p>
+        <p>Best regards,<br>The UrbanAssist Team</p>
       `
     }).catch(err => console.error('Complaint confirmation email error:', err));
 
@@ -234,7 +234,7 @@ export const updateComplaintStatus = async (req, res) => {
         ${comment ? `<p><strong>Comment:</strong> ${comment}</p>` : ''}
         <p>You can view more details by logging into your account dashboard.</p>
         <p>Thank you for your patience.</p>
-        <p>Best regards,<br>The Community Team</p>
+        <p>Best regards,<br>The UrbanAssist Team</p>
       `
     }).catch(err => console.error('Status update email error:', err));
     
@@ -316,7 +316,7 @@ export const assignComplaint = async (req, res) => {
         ${note ? `<p><strong>Note:</strong> ${note}</p>` : ''}
         <p>You can track the progress through your account dashboard.</p>
         <p>Thank you for your patience.</p>
-        <p>Best regards,<br>The Community Team</p>
+        <p>Best regards,<br>The UrbanAssist Team</p>
       `
     }).catch(err => console.error('Assignment email error:', err));
     
@@ -388,7 +388,7 @@ export const addComment = async (req, res) => {
           <p><strong>Title:</strong> ${complaint.title}</p>
           <p><strong>Comment:</strong> ${comment}</p>
           <p>You can log in to your account dashboard to respond or check for updates.</p>
-          <p>Best regards,<br>The Community Team</p>
+          <p>Best regards,<br>The UrbanAssist Team</p>
         `
       }).catch(err => console.error('Comment notification email error:', err));
     }

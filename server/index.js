@@ -7,32 +7,25 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import apiRouter from './api/index.js';
 
-// Initialize dotenv
+// Initialize environment variables
 dotenv.config();
 
 // Create Express app
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Get current directory
+app.use(express.json()); // <-- Parse JSON bodies
+app.use(express.urlencoded({ extended: true })); // <-- Parse URL-encoded bodies
+
+// Get __dirname in ES module
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // CORS configuration
-const corsOptions = {
-  origin: process.env.NODE_ENV === 'production' 
-    ? process.env.CLIENT_URL 
-    : ['http://localhost:5173', 'http://localhost:4173', 'http://127.0.0.1:5173'],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  exposedHeaders: ['set-cookie']
-};
-
-// Middleware
-app.use(cors(corsOptions));
-app.use(express.json());
-app.use(cookieParser());
+app.use(cors({
+  origin: 'http://localhost:5173',   // <-- allow frontend origin only
+  credentials: true                  // <-- allow sending cookies
+}));
 
 // Static files for uploads
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
@@ -40,7 +33,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 // API routes
 app.use('/api', apiRouter);
 
-// Serve static files in production
+// Serve frontend in production
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../dist')));
   
@@ -49,35 +42,33 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/community-problem-reporting')
+// MongoDB connection
+mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
-    console.log('Connected to MongoDB');
-    // Start server after successful connection
+    console.log('✅ Connected to MongoDB');
     app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+      console.log(`🚀 Server running on http://localhost:${PORT}`);
     });
   })
   .catch(err => {
-    console.error('MongoDB connection error:', err);
+    console.error('❌ MongoDB connection error:', err);
     process.exit(1);
   });
 
-// Error handling middleware
+// Global error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error('🔥', err.stack);
   res.status(500).json({
     success: false,
-    message: 'Something went wrong!',
-    error: process.env.NODE_ENV === 'development' ? err.message : 'Server error'
+    message: process.env.NODE_ENV === 'development' ? err.message : 'Server error',
   });
 });
 
-// Handle 404 errors
+// Handle 404 - Not Found
 app.use((req, res) => {
   res.status(404).json({
     success: false,
-    message: 'Route not found'
+    message: 'Route not found',
   });
 });
 
