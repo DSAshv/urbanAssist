@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Shield, FileText, Users } from 'lucide-react';
 import profile1 from '../assets/profile1.png';
 import profile2 from '../assets/profile2.png';
-
+import Footer from '../components/layouts/Footer';
 
 const LandingPage: React.FC = () => {
   return (
@@ -127,7 +127,8 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-50">
+      
+      {/* <footer className="bg-gray-50">
         <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <p className="text-base text-gray-400">
@@ -135,7 +136,9 @@ const LandingPage: React.FC = () => {
             </p>
           </div>
         </div>
-      </footer>
+      </footer> */}
+
+      <Footer />
     </div>
   );
 };

@@ -27,6 +27,9 @@ app.use(cors({
   credentials: true                  // <-- allow sending cookies
 }));
 
+// After you create `app`
+app.use(cookieParser());
+
 // Static files for uploads
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 

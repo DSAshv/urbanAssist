@@ -8,7 +8,8 @@ interface AdminRouteProps {
 }
 
 const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
-  const { isAuthenticated, user, loading } = useAuth();
+  const { authState } = useAuth();
+  const { isAuthenticated, user, loading } = authState;
 
   if (loading) {
     return <Loading />;

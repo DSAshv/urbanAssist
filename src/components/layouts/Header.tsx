@@ -85,7 +85,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, isAdmin = false }) => {
                 <MenuIcon className="h-6 w-6" />
               </button>
               <Link to={isAdmin ? '/admin/dashboard' : '/app/dashboard'} className="flex items-center">
-                <span className="text-primary-700 font-bold text-xl">Community<span className="text-secondary-600">PRO</span></span>
+                <span className="text-primary-700 font-bold text-xl">Urban<span className="text-secondary-600">Assist</span></span>
               </Link>
             </div>
           </div>

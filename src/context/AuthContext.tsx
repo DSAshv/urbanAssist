@@ -54,7 +54,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const interceptor = axios.interceptors.response.use(
       (response) => response,
       async (error) => {
-        if (error.response && error.response.status === 401) {
+        if (error.response?.status === 401) {
           // If not on auth-related pages, try to refresh token
           if (
             !window.location.pathname.includes('/login') &&
@@ -62,6 +62,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           ) {
             try {
               await axios.post(`${API_URL}/api/auth/refresh-token`);
+              // Retry the original request
               return axios(error.config);
             } catch (refreshError) {
               // If refresh fails, log out
@@ -132,7 +133,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           error: null,
           mfaRequired: true
         });
-        
         return;
       }
       
@@ -156,6 +156,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       toast.error(errorMessage);
+      throw error;
     }
   };
 
@@ -186,6 +187,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       toast.error(errorMessage);
+      throw error;
     }
   };
 
@@ -204,6 +206,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       toast.success('Logout successful');
     } catch (error) {
       toast.error('Logout failed. Please try again.');
+      throw error;
     }
   };
 
@@ -227,7 +230,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await axios.post(`${API_URL}/api/auth/mfa/verify`, { token });
       
-      // Update user info with MFA enabled
       if (authState.user) {
         setAuthState({
           ...authState,
@@ -254,7 +256,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await axios.post(`${API_URL}/api/auth/mfa/disable`, { token, password });
       
-      // Update user info with MFA disabled
       if (authState.user) {
         setAuthState({
           ...authState,

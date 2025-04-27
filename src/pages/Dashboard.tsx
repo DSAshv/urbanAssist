@@ -119,7 +119,7 @@ const Dashboard: React.FC = () => {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
               Status
@@ -128,7 +128,7 @@ const Dashboard: React.FC = () => {
               id="status"
               value={filter.status || ''}
               onChange={(e) => applyFilter({ ...filter, status: e.target.value || undefined })}
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="">All Statuses</option>
               <option value="pending">Pending</option>
@@ -146,7 +146,7 @@ const Dashboard: React.FC = () => {
               id="category"
               value={filter.category || ''}
               onChange={(e) => applyFilter({ ...filter, category: e.target.value || undefined })}
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="">All Categories</option>
               <option value="road">Road</option>

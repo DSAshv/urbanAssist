@@ -1,8 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { AlertTriangle, Filter, RefreshCw } from 'lucide-react';
-import { Complaint, PaginatedResponse } from '../types';
+import { 
+  BarChart3, 
+  Users, 
+  AlertTriangle, 
+  Filter, 
+  RefreshCw,
+  Clock,
+  CheckCircle,
+  XCircle,
+  AlertOctagon
+} from 'lucide-react';
+import { Complaint, ComplaintStats, PaginatedResponse } from '../types';
 import { API_URL } from '../config';
 import ComplaintCard from '../components/complaints/ComplaintCard';
 import Pagination from '../components/ui/Pagination';
@@ -11,6 +21,7 @@ import EmptyState from '../components/ui/EmptyState';
 
 const AdminDashboard: React.FC = () => {
   const [complaints, setComplaints] = useState<Complaint[]>([]);
+  const [stats, setStats] = useState<ComplaintStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -19,7 +30,17 @@ const AdminDashboard: React.FC = () => {
     status?: string;
     category?: string;
     priority?: string;
+    department?: string;
   }>({});
+
+  const fetchStats = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/admin/complaints/stats`);
+      setStats(response.data.data);
+    } catch (err) {
+      console.error('Error fetching stats:', err);
+    }
+  };
 
   const fetchComplaints = async () => {
     setLoading(true);
@@ -27,16 +48,14 @@ const AdminDashboard: React.FC = () => {
     try {
       const params = new URLSearchParams();
       params.append('page', currentPage.toString());
-      params.append('limit', '10');
+      params.append('limit', '9');
       
       Object.entries(filter).forEach(([key, value]) => {
-        if (value) {
-          params.append(key, value);
-        }
+        if (value) params.append(key, value);
       });
       
       const response = await axios.get<PaginatedResponse<{ complaints: Complaint[] }>>(
-        `${API_URL}/api/admin/complaints?${params.toString()}`
+        `${API_URL}/api/complaints?${params.toString()}`
       );
       
       setComplaints(response.data.data.complaints);
@@ -50,6 +69,7 @@ const AdminDashboard: React.FC = () => {
   };
 
   useEffect(() => {
+    fetchStats();
     fetchComplaints();
   }, [currentPage, filter]);
 
@@ -66,9 +86,7 @@ const AdminDashboard: React.FC = () => {
     hidden: { opacity: 0 },
     visible: { 
       opacity: 1,
-      transition: { 
-        staggerChildren: 0.1
-      }
+      transition: { staggerChildren: 0.1 }
     }
   };
 
@@ -86,6 +104,80 @@ const AdminDashboard: React.FC = () => {
         </p>
       </div>
 
+      {/* Stats Overview */}
+      {stats && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <motion.div
+            variants={itemVariants}
+            className="bg-white rounded-lg shadow-md p-6"
+          >
+            <div className="flex items-center">
+              <div className="p-3 bg-amber-100 rounded-full">
+                <Clock className="h-6 w-6 text-amber-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Pending</p>
+                <p className="text-2xl font-semibold text-gray-900">
+                  {stats.statusStats.find(s => s._id === 'pending')?.count || 0}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            variants={itemVariants}
+            className="bg-white rounded-lg shadow-md p-6"
+          >
+            <div className="flex items-center">
+              <div className="p-3 bg-blue-100 rounded-full">
+                <BarChart3 className="h-6 w-6 text-blue-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">In Progress</p>
+                <p className="text-2xl font-semibold text-gray-900">
+                  {stats.statusStats.find(s => s._id === 'in-progress')?.count || 0}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            variants={itemVariants}
+            className="bg-white rounded-lg shadow-md p-6"
+          >
+            <div className="flex items-center">
+              <div className="p-3 bg-green-100 rounded-full">
+                <CheckCircle className="h-6 w-6 text-green-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Resolved</p>
+                <p className="text-2xl font-semibold text-gray-900">
+                  {stats.statusStats.find(s => s._id === 'resolved')?.count || 0}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            variants={itemVariants}
+            className="bg-white rounded-lg shadow-md p-6"
+          >
+            <div className="flex items-center">
+              <div className="p-3 bg-red-100 rounded-full">
+                <AlertOctagon className="h-6 w-6 text-red-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Urgent</p>
+                <p className="text-2xl font-semibold text-gray-900">
+                  {stats.priorityStats.find(p => p._id === 'urgent')?.count || 0}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Filters */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-3 sm:mb-0">
@@ -104,7 +196,7 @@ const AdminDashboard: React.FC = () => {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
             <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
               Status
@@ -113,7 +205,7 @@ const AdminDashboard: React.FC = () => {
               id="status"
               value={filter.status || ''}
               onChange={(e) => applyFilter({ ...filter, status: e.target.value || undefined })}
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="">All Statuses</option>
               <option value="pending">Pending</option>
@@ -131,7 +223,7 @@ const AdminDashboard: React.FC = () => {
               id="category"
               value={filter.category || ''}
               onChange={(e) => applyFilter({ ...filter, category: e.target.value || undefined })}
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="">All Categories</option>
               <option value="road">Road</option>
@@ -152,7 +244,7 @@ const AdminDashboard: React.FC = () => {
               id="priority"
               value={filter.priority || ''}
               onChange={(e) => applyFilter({ ...filter, priority: e.target.value || undefined })}
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="">All Priorities</option>
               <option value="low">Low</option>
@@ -161,9 +253,30 @@ const AdminDashboard: React.FC = () => {
               <option value="urgent">Urgent</option>
             </select>
           </div>
+
+          <div>
+            <label htmlFor="department" className="block text-sm font-medium text-gray-700 mb-1">
+              Department
+            </label>
+            <select
+              id="department"
+              value={filter.department || ''}
+              onChange={(e) => applyFilter({ ...filter, department: e.target.value || undefined })}
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            >
+              <option value="">All Departments</option>
+              <option value="roads">Roads</option>
+              <option value="water">Water</option>
+              <option value="electricity">Electricity</option>
+              <option value="sanitation">Sanitation</option>
+              <option value="public-works">Public Works</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
         </div>
       </div>
 
+      {/* Complaints List */}
       {loading ? (
         <Loading message="Loading complaints..." />
       ) : error ? (
@@ -193,7 +306,7 @@ const AdminDashboard: React.FC = () => {
           >
             {complaints.map((complaint) => (
               <motion.div key={complaint._id} variants={itemVariants}>
-                <ComplaintCard complaint={complaint} isAdmin />
+                <ComplaintCard complaint={complaint} />
               </motion.div>
             ))}
           </motion.div>
