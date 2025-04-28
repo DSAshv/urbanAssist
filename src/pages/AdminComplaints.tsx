@@ -156,10 +156,11 @@ const AdminComplaints: React.FC = () => {
               className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="">All Departments</option>
-              <option value="municipal">Municipal</option>
-              <option value="electricity">Electricity</option>
+              <option value="roads">Roads</option>
               <option value="water">Water</option>
-              <option value="road">Road</option>
+              <option value="electricity">Electricity</option>
+              <option value="sanitation">Sanitation</option>
+              <option value="public-works">Public Works</option>
               <option value="other">Other</option>
             </select>
           </div>

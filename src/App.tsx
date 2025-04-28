@@ -19,6 +19,7 @@ import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
 import MfaSetup from './pages/MfaSetup';
 import Complaints from './pages/AdminComplaints';
+import Settings from './pages/admin/Settings';
 
 // Components
 import PrivateRoute from './components/routing/PrivateRoute';
@@ -62,6 +63,7 @@ const App: React.FC = () => {
             <Route path="users" element={<Users />} />
             <Route path="complaints" element={<Complaints />} />
             <Route path="complaints/:id" element={<ComplaintDetails isAdmin />} />
+            <Route path="settings" element={<Settings />} />
           </Route>
 
           

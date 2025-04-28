@@ -22,7 +22,7 @@ interface User {
   firstName: string;
   lastName: string;
   email: string;
-  role: 'user' | 'admin' | 'department';
+  role: 'user' | 'admin' | 'department-officer';
   department?: string;
   active: boolean;
   suspended: boolean;
@@ -43,6 +43,14 @@ const Users: React.FC = () => {
     status: ''
   });
   const [searchTerm, setSearchTerm] = useState('');
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    role: 'user',
+    department: '',
+  });
 
   const fetchUsers = async () => {
     try {
@@ -55,21 +63,20 @@ const Users: React.FC = () => {
   
       const response = await axios.get(`${API_URL}/api/admin/users?${params}`);
   
-      setUsers(response.data.data); 
-      setTotalPages(1);
+      setUsers(response.data.data);
+      setTotalPages(response.data.totalPages);
     } catch (error) {
       toast.error('Failed to fetch users');
     } finally {
       setLoading(false);
     }
   };
-  
 
   useEffect(() => {
     fetchUsers();
   }, [currentPage, filter, searchTerm]);
 
-  const handleCreateUser = async (formData: any) => {
+  const handleCreateUser = async () => {
     try {
       await axios.post(`${API_URL}/api/admin/users`, formData);
       toast.success('User created successfully');
@@ -77,6 +84,17 @@ const Users: React.FC = () => {
       fetchUsers();
     } catch (error) {
       toast.error('Failed to create user');
+    }
+  };
+
+  const handleEditUser = async () => {
+    try {
+      await axios.put(`${API_URL}/api/admin/users/${selectedUser?._id}`, formData);
+      toast.success('User updated successfully');
+      setShowCreateModal(false);
+      fetchUsers();
+    } catch (error) {
+      toast.error('Failed to update user');
     }
   };
 
@@ -91,15 +109,16 @@ const Users: React.FC = () => {
     }
   };
 
-  const handleUnsuspendUser = async (userId: string) => {
+  const handleUnsuspendUser = async (userId : string) => {
     try {
       await axios.post(`${API_URL}/api/admin/users/${userId}/unsuspend`);
       toast.success('User unsuspended successfully');
+      setShowSuspendModal(true);
       fetchUsers();
     } catch (error) {
-      toast.error('Failed to unsuspend user');
+      console.error('Error unsuspending user:', error);
     }
-  };
+  };  
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -143,7 +162,7 @@ const Users: React.FC = () => {
               <option value="">All Roles</option>
               <option value="user">User</option>
               <option value="admin">Admin</option>
-              <option value="department">Department</option>
+              <option value="department">Department Officer</option>
             </select>
             <select
               value={filter.status}
@@ -217,7 +236,7 @@ const Users: React.FC = () => {
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                       user.role === 'admin' 
                         ? 'bg-purple-100 text-purple-800'
-                        : user.role === 'department'
+                        : user.role === 'department-officer'
                         ? 'bg-blue-100 text-blue-800'
                         : 'bg-green-100 text-green-800'
                     }`}>
@@ -257,7 +276,15 @@ const Users: React.FC = () => {
                       </button>
                       <button
                         onClick={() => {
-                          // Handle edit
+                          setSelectedUser(user);
+                          setFormData({
+                            firstName: user.firstName,
+                            lastName: user.lastName,
+                            email: user.email,
+                            role: user.role,
+                            department: user.department,
+                          });
+                          setShowCreateModal(true);
                         }}
                         className="text-indigo-600 hover:text-indigo-900"
                       >
@@ -273,43 +300,162 @@ const Users: React.FC = () => {
       )}
 
       {/* Pagination */}
-      <div className="mt-6 flex justify-center">
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-        />
-      </div>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
 
-      {/* Create User Modal */}
+      {/* Create/Edit Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium leading-6 text-gray-900">Create New User</h3>
-              <form className="mt-4">
-                {/* Form fields */}
-              </form>
+        <motion.div
+          className="fixed inset-0 bg-black bg-opacity-50 z-30"
+          onClick={() => setShowCreateModal(false)}
+        >
+          <div
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg p-6 shadow-lg w-96"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-xl font-semibold mb-4">Create/Edit User</h2>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">First Name</label>
+              <input
+                type="text"
+                value={formData.firstName}
+                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">Last Name</label>
+              <input
+                type="text"
+                value={formData.lastName}
+                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">Email</label>
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">Password</label>
+              <input
+                type="password"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1"
+              />
+            </div>
+            <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700">Role</label>
+            <select
+                value={formData.role}
+                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1"
+            >
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+                <option value="department">Department Officer</option>
+            </select>
+            </div>
+
+            {formData.role === 'department' && (
+            <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">Department</label>
+                <select
+                id="department"
+                value={formData.department || ''}
+                onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1"
+                >
+                <option value="roads">Roads</option>
+                <option value="water">Water</option>
+                <option value="electricity">Electricity</option>
+                <option value="sanitation">Sanitation</option>
+                <option value="public-works">Public Works</option>
+                <option value="other">Other</option>
+                </select>
+            </div>
+            )}
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => setShowCreateModal(false)}
+                className="text-gray-600"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={selectedUser ? handleEditUser : handleCreateUser}
+                className="bg-blue-600 text-white px-6 py-2 rounded-md"
+              >
+                {selectedUser ? 'Update User' : 'Create User'}
+              </button>
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
 
-      {/* Suspend User Modal */}
-      {showSuspendModal && selectedUser && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium leading-6 text-gray-900">
-                {selectedUser.suspended ? 'Unsuspend User' : 'Suspend User'}
-              </h3>
-              <form className="mt-4">
-                {/* Form fields */}
-              </form>
+      {/* Suspend Modal */}
+        {showSuspendModal && (
+        <motion.div
+            className="fixed inset-0 bg-black bg-opacity-50 z-30"
+            onClick={() => setShowSuspendModal(false)}
+        >
+            <div
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg p-6 shadow-lg w-96"
+            onClick={(e) => e.stopPropagation()}
+            >
+            <h2 className="text-xl font-semibold mb-4">
+                {selectedUser?.suspended ? 'Unsuspend User' : 'Suspend User'}
+            </h2>
+            <p className="mb-4">
+                {selectedUser?.suspended
+                ? 'Are you sure you want to unsuspend this user?'
+                : 'Are you sure you want to suspend this user? Please provide a reason.'}
+            </p>
+
+            {!selectedUser?.suspended && (
+                <textarea
+                placeholder="Enter reason for suspension"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1"
+                ></textarea>
+            )}
+
+            <div className="flex justify-end gap-4 mt-4">
+                <button
+                onClick={() => setShowSuspendModal(false)}
+                className="text-gray-600"
+                >
+                Cancel
+                </button>
+                <button
+                onClick={() => {
+                    if (selectedUser) {
+                    if (selectedUser.suspended) {
+                        handleUnsuspendUser(selectedUser._id);
+                    } else {
+                        handleSuspendUser(selectedUser._id, 'Reason for suspension');
+                    }
+                    }
+                }}
+                className={`${
+                    selectedUser?.suspended ? 'bg-green-600' : 'bg-red-600'
+                } text-white px-6 py-2 rounded-md`}
+                >
+                {selectedUser?.suspended ? 'Unsuspend' : 'Suspend'}
+                </button>
             </div>
-          </div>
-        </div>
-      )}
+            </div>
+        </motion.div>
+        )}
+
     </div>
   );
 };

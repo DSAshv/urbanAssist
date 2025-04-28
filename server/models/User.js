@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema({
   },
   department: {
     type: String,
-    enum: ['roads', 'water', 'electricity', 'sanitation', 'public works', 'other'],
+    enum: ['roads', 'water', 'electricity', 'sanitation', 'public-works', 'other'],
     required: function() {
       return this.role === 'department';
     }
