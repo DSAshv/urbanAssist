@@ -19,6 +19,8 @@ import Pagination from '../components/ui/Pagination';
 import Loading from '../components/ui/Loading';
 import EmptyState from '../components/ui/EmptyState';
 
+import { User, FileText, File } from 'lucide-react'; // Import necessary icons
+
 const AdminDashboard: React.FC = () => {
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [stats, setStats] = useState<ComplaintStats | null>(null);
@@ -39,6 +41,22 @@ const AdminDashboard: React.FC = () => {
       setStats(response.data.data);
     } catch (err) {
       console.error('Error fetching stats:', err);
+    }
+  };
+
+  const handleGenerateReport = async (type: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await axios.post(`${API_URL}/api/reports/generate`, { type });
+      // Handle successful report generation
+      console.log('Report request added to queue:', response.data);
+      alert('Report generation has been added to the queue. You will receive an email once ready.');
+    } catch (err) {
+      setError('Failed to generate report. Please try again.');
+      console.error('Error generating report:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -176,6 +194,60 @@ const AdminDashboard: React.FC = () => {
           </motion.div>
         </div>
       )}
+
+{/* Report Generation Widgets */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {/* Overall Report Widget */}
+        <motion.div
+          variants={itemVariants}
+          className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:bg-gray-100"
+          onClick={() => handleGenerateReport('overall')}
+        >
+          <div className="flex items-center">
+            <div className="p-3 bg-blue-100 rounded-full">
+              <File className="h-6 w-6 text-blue-600" />
+            </div>
+            <div className="ml-4">
+              <h3 className="text-lg font-semibold text-gray-900">Generate Overall Report</h3>
+              <p className="text-sm text-gray-600">Generate a report of all complaints</p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Complaints Report Widget */}
+        <motion.div
+          variants={itemVariants}
+          className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:bg-gray-100"
+          onClick={() => handleGenerateReport('complaints')}
+        >
+          <div className="flex items-center">
+            <div className="p-3 bg-green-100 rounded-full">
+              <BarChart3 className="h-6 w-6 text-green-600" />
+            </div>
+            <div className="ml-4">
+              <h3 className="text-lg font-semibold text-gray-900">Generate Complaints Report</h3>
+              <p className="text-sm text-gray-600">Generate a report of specific complaints</p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Users Report Widget */}
+        <motion.div
+          variants={itemVariants}
+          className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:bg-gray-100"
+          onClick={() => handleGenerateReport('users')}
+        >
+          <div className="flex items-center">
+            <div className="p-3 bg-yellow-100 rounded-full">
+              <User className="h-6 w-6 text-yellow-600" />
+            </div>
+            <div className="ml-4">
+              <h3 className="text-lg font-semibold text-gray-900">Generate Users Report</h3>
+              <p className="text-sm text-gray-600">Generate a detailed report for users</p>
+            </div>
+          </div>
+        </motion.div>
+      </div>
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">

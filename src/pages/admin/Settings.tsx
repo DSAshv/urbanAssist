@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { toast } from 'react-toastify'; // ✨ Import toast
+import { toast } from "react-toastify";
 
 export default function SettingsPage() {
   const [envVars, setEnvVars] = useState({});
   const [editedVars, setEditedVars] = useState({});
 
   useEffect(() => {
-    fetch('/api/admin/settings')
+    fetch('/api/admin/settings')  // <-- Correct endpoint
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -17,7 +17,7 @@ export default function SettingsPage() {
       .catch((err) => console.error('Failed to fetch env vars:', err));
   }, []);
 
-  const handleChange = (key: string, value: string) => {
+  const handleChange = (key, value) => {
     setEditedVars(prev => ({
       ...prev,
       [key]: value
@@ -57,18 +57,21 @@ export default function SettingsPage() {
               className="w-2/3 border border-gray-300 rounded-md px-3 py-2"
               value={value}
               onChange={(e) => handleChange(key, e.target.value)}
-              disabled
             />
           </div>
         ))}
       </div>
       <button
-        disabled
         onClick={handleSave}
-        className="mt-6 bg-white-600 text-white px-6 py-2 rounded-md"
+        className="mt-6 bg-blue-600 text-white px-6 py-2 rounded-md"
       >
         Save Changes
       </button>
+
+      {/* Note about server restart */}
+      <p className="mt-4 text-sm text-gray-500">
+        <strong>Note:</strong> Any changes made here will require a server restart to take effect.
+      </p>
     </div>
   );
 }
