@@ -25,6 +25,7 @@
     "framer-motion": "^11.0.8",
     "jsonwebtoken": "^9.0.2",
     "leaflet": "^1.9.4",
+    "localtunnel": "^2.0.2",
     "lucide-react": "^0.344.0",
     "mongodb": "^6.16.0",
     "mongoose": "^8.14.0",

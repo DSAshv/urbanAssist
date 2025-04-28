@@ -31,7 +31,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isAdmin = false }) => {
         />
         
         {/* Main Content */}
-        <main className="flex-1 overflow-auto pt-16">
+        <main className="flex-1 overflow-auto pt-16 lg:ml-64">
           <div className="px-4 py-8 min-h-full">
             <Outlet />
           </div>

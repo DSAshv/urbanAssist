@@ -21,7 +21,8 @@ const Dashboard: React.FC = () => {
     status?: string;
     category?: string;
   }>({});
-  const { authState } = useAuth();
+
+  const authState  = useAuth();
 
   const fetchComplaints = async () => {
     setLoading(true);

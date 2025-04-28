@@ -73,7 +73,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, isAdmin = false }) => {
   };
 
   return (
-    <header className="bg-white shadow-sm fixed w-full z-10">
+    <header className="bg-white shadow-sm fixed w-full z-20">
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex">

@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
-import { motion } from 'framer-motion';
 import axios from 'axios';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import { toast } from 'react-toastify';
-import { AlertTriangle, MapPin, Upload, X, Check, ArrowLeft } from 'lucide-react';
+import { MapPin, Upload, X, Check, ArrowLeft } from 'lucide-react';
 
 import { API_URL } from '../config';
 import { ComplaintCategory, ComplaintPriority } from '../types';
@@ -38,54 +37,88 @@ interface MapSelectorProps {
   initialLocation?: { lat: number; lng: number };
 }
 
-// Map Selection Component
 const MapSelector: React.FC<MapSelectorProps> = ({ onLocationSelect, initialLocation }) => {
+  const defaultLocation: [number, number] = [13.0827, 80.2707];
   const [marker, setMarker] = useState<{ lat: number; lng: number } | null>(initialLocation || null);
+  const [mapCenter, setMapCenter] = useState<[number, number]>(initialLocation ? [initialLocation.lat, initialLocation.lng] : defaultLocation);
+  const [setMap] = useState<any>(null);
+
+  const fetchCurrentLocation = async (mapInstance: any) => {
+    if (!navigator.geolocation) {
+      console.error('Geolocation not supported');
+      return;
+    }
   
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        const newLatLng = { lat: latitude, lng: longitude };
+        setMarker(newLatLng);
+        setMapCenter([latitude, longitude]);
+        if (mapInstance) {
+          mapInstance.setView([latitude, longitude], 16);
+        }
+        try {
+          const response = await axios.get(`/api/reverse-geocode?lat=${latitude}&lon=${longitude}`);
+          const address = response.data.display_name;
+          onLocationSelect(latitude, longitude, address);
+        } catch (error) {
+          console.error('Geocoding error:', error);
+          onLocationSelect(latitude, longitude, 'Unknown location');
+        }
+      },
+      (error) => {
+        console.error('Error getting location:', error);
+      }
+    );
+  };  
+
   const LocationMarker = () => {
     useMapEvents({
       click: async (e) => {
         setMarker(e.latlng);
-        
-        // Reverse geocoding to get address
         try {
-          const response = await axios.get(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${e.latlng.lat}&lon=${e.latlng.lng}&zoom=18&addressdetails=1`
-          );
+          const response = await axios.get(`/api/reverse-geocode?lat=${e.latlng.lat}&lon=${e.latlng.lng}`);
           const address = response.data.display_name;
           onLocationSelect(e.latlng.lat, e.latlng.lng, address);
         } catch (error) {
           console.error('Geocoding error:', error);
           onLocationSelect(e.latlng.lat, e.latlng.lng, 'Unknown location');
         }
-      }
+      },
     });
 
     return marker ? <Marker position={marker} icon={customIcon} /> : null;
   };
 
   return (
-    <div className="h-[400px] rounded-lg overflow-hidden border border-gray-300">
+    <div className="h-[400px] rounded-lg overflow-hidden border border-gray-300 relative">
       <MapContainer
-        center={initialLocation || [40.7128, -74.0060]} // Default to NYC if no initial location
+        center={mapCenter}
         zoom={13}
         style={{ height: '100%', width: '100%' }}
+        whenCreated={(mapInstance) => {
+          setMap(mapInstance);
+          fetchCurrentLocation(mapInstance);
+        }}        
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          attribution='&copy; OpenStreetMap contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <LocationMarker />
       </MapContainer>
+
       <div className="bg-white bg-opacity-90 p-2 absolute bottom-0 left-0 right-0 z-[1000] text-sm text-gray-600 border-t border-gray-200">
         <div className="flex items-center">
           <MapPin className="w-4 h-4 mr-2 text-primary-600" />
-          Click on the map to select a location
+          {marker ? "Click anywhere to change location" : "Allow location access or click on the map"}
         </div>
       </div>
     </div>
   );
 };
+
 
 const NewComplaint: React.FC = () => {
   const { register, handleSubmit, control, setValue, watch, formState: { errors } } = useForm<NewComplaintFormData>();
@@ -283,10 +316,10 @@ const NewComplaint: React.FC = () => {
                 name="location"
                 control={control}
                 defaultValue={{ latitude: 0, longitude: 0, address: '' }}
-                rules={{ 
-                  validate: value => 
-                    (value.latitude !== 0 && value.longitude !== 0) || 
-                    'Please select a location on the map' 
+                rules={{
+                  validate: value =>
+                    (value.latitude !== 0 && value.longitude !== 0) ||
+                    'Please select a location on the map'
                 }}
                 render={({ field }) => (
                   <MapSelector

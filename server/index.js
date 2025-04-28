@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import apiRouter from './api/index.js';
+import axios from 'axios';
 
 // Initialize environment variables
 dotenv.config();
@@ -17,13 +18,25 @@ const PORT = process.env.PORT || 3001;
 app.use(express.json()); // <-- Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // <-- Parse URL-encoded bodies
 
+app.get('/api/reverse-geocode', async (req, res) => {
+  const { lat, lon } = req.query;
+  try {
+    const response = await axios.get(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`
+    );
+    res.json(response.data);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch geocode' });
+  }
+});
+
 // Get __dirname in ES module
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // CORS configuration
 app.use(cors({
-  origin: 'http://localhost:5173',   // <-- allow frontend origin only
+  origin: '*',   // <-- allow frontend origin only
   credentials: true                  // <-- allow sending cookies
 }));
 
