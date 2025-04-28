@@ -36,7 +36,7 @@ const __dirname = path.dirname(__filename);
 
 // CORS configuration
 app.use(cors({
-  origin: '*',   // <-- allow frontend origin only
+  origin: 'http://localhost:5173',   // <-- allow frontend origin only
   credentials: true                  // <-- allow sending cookies
 }));
 

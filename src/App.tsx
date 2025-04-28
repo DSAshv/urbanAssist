@@ -14,9 +14,11 @@ import Dashboard from './pages/Dashboard';
 import NewComplaint from './pages/NewComplaint';
 import ComplaintDetails from './pages/ComplaintDetails';
 import AdminDashboard from './pages/AdminDashboard';
+import Users from './pages/admin/Users';
 import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
 import MfaSetup from './pages/MfaSetup';
+import Complaints from './pages/AdminComplaints';
 
 // Components
 import PrivateRoute from './components/routing/PrivateRoute';
@@ -57,8 +59,11 @@ const App: React.FC = () => {
           <Route path="/admin" element={<AdminRoute><MainLayout isAdmin /></AdminRoute>}>
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="users" element={<Users />} />
+            <Route path="complaints" element={<Complaints />} />
             <Route path="complaints/:id" element={<ComplaintDetails isAdmin />} />
           </Route>
+
           
           <Route path="*" element={<NotFound />} />
         </Routes>

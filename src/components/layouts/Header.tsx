@@ -240,14 +240,6 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, isAdmin = false }) => {
                         <User className="mr-2 h-4 w-4 text-gray-500" />
                         Your Profile
                       </Link>
-                      <Link
-                        to={isAdmin ? '/admin/settings' : '/app/settings'}
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                        onClick={() => setUserMenuOpen(false)}
-                      >
-                        <Settings className="mr-2 h-4 w-4 text-gray-500" />
-                        Settings
-                      </Link>
                       <button
                         onClick={handleLogout}
                         className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"

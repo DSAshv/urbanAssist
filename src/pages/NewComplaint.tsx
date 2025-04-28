@@ -41,22 +41,22 @@ const MapSelector: React.FC<MapSelectorProps> = ({ onLocationSelect, initialLoca
   const defaultLocation: [number, number] = [13.0827, 80.2707];
   const [marker, setMarker] = useState<{ lat: number; lng: number } | null>(initialLocation || null);
   const [mapCenter, setMapCenter] = useState<[number, number]>(initialLocation ? [initialLocation.lat, initialLocation.lng] : defaultLocation);
-  const [setMap] = useState<any>(null);
+  const [map, setMap] = useState<any>(null);
 
-  const fetchCurrentLocation = async (mapInstance: any) => {
+  const fetchCurrentLocation = async () => {
     if (!navigator.geolocation) {
       console.error('Geolocation not supported');
       return;
     }
-  
+
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
         const newLatLng = { lat: latitude, lng: longitude };
         setMarker(newLatLng);
         setMapCenter([latitude, longitude]);
-        if (mapInstance) {
-          mapInstance.setView([latitude, longitude], 16);
+        if (map) {
+          map.setView([latitude, longitude], 16);
         }
         try {
           const response = await axios.get(`/api/reverse-geocode?lat=${latitude}&lon=${longitude}`);
@@ -71,7 +71,7 @@ const MapSelector: React.FC<MapSelectorProps> = ({ onLocationSelect, initialLoca
         console.error('Error getting location:', error);
       }
     );
-  };  
+  };
 
   const LocationMarker = () => {
     useMapEvents({
@@ -99,8 +99,8 @@ const MapSelector: React.FC<MapSelectorProps> = ({ onLocationSelect, initialLoca
         style={{ height: '100%', width: '100%' }}
         whenCreated={(mapInstance) => {
           setMap(mapInstance);
-          fetchCurrentLocation(mapInstance);
-        }}        
+          fetchCurrentLocation();
+        }}
       >
         <TileLayer
           attribution='&copy; OpenStreetMap contributors'
@@ -109,15 +109,25 @@ const MapSelector: React.FC<MapSelectorProps> = ({ onLocationSelect, initialLoca
         <LocationMarker />
       </MapContainer>
 
-      <div className="bg-white bg-opacity-90 p-2 absolute bottom-0 left-0 right-0 z-[1000] text-sm text-gray-600 border-t border-gray-200">
+      {/* Bottom Bar */}
+      <div className="bg-white bg-opacity-90 p-2 absolute bottom-0 left-0 right-0 z-[1000] text-sm text-gray-600 border-t border-gray-200 flex items-center justify-between">
         <div className="flex items-center">
           <MapPin className="w-4 h-4 mr-2 text-primary-600" />
           {marker ? "Click anywhere to change location" : "Allow location access or click on the map"}
         </div>
+        {/* Button to set current location manually */}
+        <button
+          onClick={fetchCurrentLocation}
+          type="button"
+          className="bg-primary-500 hover:bg-primary-600 text-white text-xs font-medium py-1 px-3 rounded ml-2"
+        >
+          Use Current Location
+        </button>
       </div>
     </div>
   );
 };
+
 
 
 const NewComplaint: React.FC = () => {

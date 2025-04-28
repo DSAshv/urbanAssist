@@ -1,14 +1,28 @@
+// Address types (if you don't have it already)
+export interface Address {
+  street?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  country?: string;
+}
+
 // User types
 export interface User {
   id: string;
   firstName: string;
   lastName: string;
   email: string;
-  role: 'user' | 'admin';
+  role: 'user' | 'admin' | 'department';
+  department?: string;
   phone?: string;
   address?: Address;
   profilePicture?: string;
   mfaEnabled: boolean;
+  active: boolean;
+  suspended?: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Address {

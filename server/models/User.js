@@ -28,8 +28,15 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['user', 'admin'],
+    enum: ['user', 'admin', 'department'],
     default: 'user'
+  },
+  department: {
+    type: String,
+    enum: ['roads', 'water', 'electricity', 'sanitation', 'public works', 'other'],
+    required: function() {
+      return this.role === 'department';
+    }
   },
   phone: {
     type: String,
@@ -60,6 +67,13 @@ const userSchema = new mongoose.Schema({
   active: {
     type: Boolean,
     default: true
+  },
+  suspended: {
+    type: Boolean,
+    default: false
+  },
+  suspensionReason: {
+    type: String
   },
   createdAt: {
     type: Date,
