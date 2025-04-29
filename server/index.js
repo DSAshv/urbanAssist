@@ -30,6 +30,19 @@ app.get('/api/reverse-geocode', async (req, res) => {
   }
 });
 
+// API route to send push notification
+app.post('/api/send-notification', async (req, res) => {
+  const { token, title, body } = req.body;
+
+  try {
+    await sendPushNotification(token, title, body);
+    res.status(200).send({ message: 'Notification sent successfully' });
+  } catch (error) {
+    res.status(500).send({ error: 'Failed to send notification' });
+  }
+});
+
+
 // Get __dirname in ES module
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

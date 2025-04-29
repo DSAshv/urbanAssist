@@ -336,7 +336,6 @@ export const assignComplaint = async (req, res) => {
   }
 };
 
-// Add comment to complaint
 export const addComment = async (req, res) => {
   try {
     const { comment } = req.body;
@@ -348,9 +347,10 @@ export const addComment = async (req, res) => {
       });
     }
     
-    // Find complaint
+    // Find complaint and populate necessary fields
     const complaint = await Complaint.findById(req.params.id)
-      .populate('user', 'firstName lastName email');
+      .populate('user', 'firstName lastName email')
+      .populate('comments.createdBy', 'firstName lastName role');
     
     if (!complaint) {
       return res.status(404).json({
@@ -359,7 +359,7 @@ export const addComment = async (req, res) => {
       });
     }
     
-    // Check if user is authorized to comment
+    // Check authorization
     if (req.user.role !== 'admin' && complaint.user._id.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         success: false,
@@ -367,15 +367,30 @@ export const addComment = async (req, res) => {
       });
     }
     
-    // Add comment
-    complaint.comments.push({
+    // Create new comment
+    const newComment = {
       text: comment,
       createdBy: req.user._id
-    });
+    };
     
+    // Add comment and save
+    complaint.comments.push(newComment);
     await complaint.save();
     
-    // If comment is added by admin, notify user
+    // Get the newly added comment with populated createdBy
+    const savedComment = await Complaint.findOne(
+      { _id: complaint._id, 'comments._id': complaint.comments[complaint.comments.length - 1]._id },
+      { 'comments.$': 1 }
+    )
+    .populate('comments.createdBy', 'firstName lastName role');
+    
+    if (!savedComment) {
+      throw new Error('Failed to retrieve saved comment');
+    }
+    
+    const populatedComment = savedComment.comments[0];
+    
+    // Send notification email if needed
     if (req.user.role === 'admin' && req.user._id.toString() !== complaint.user._id.toString()) {
       sendMail({
         to: complaint.user.email,
@@ -393,13 +408,25 @@ export const addComment = async (req, res) => {
       }).catch(err => console.error('Comment notification email error:', err));
     }
     
+    // Return success response with the full comment data
     res.status(200).json({
       success: true,
       message: 'Comment added successfully',
       data: {
-        comment: complaint.comments[complaint.comments.length - 1]
+        comment: {
+          _id: populatedComment._id,
+          text: populatedComment.text,
+          createdAt: populatedComment.createdAt,
+          createdBy: {
+            _id: populatedComment.createdBy._id,
+            firstName: populatedComment.createdBy.firstName,
+            lastName: populatedComment.createdBy.lastName,
+            role: populatedComment.createdBy.role
+          }
+        }
       }
     });
+    
   } catch (error) {
     res.status(500).json({
       success: false,

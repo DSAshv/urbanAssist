@@ -8,6 +8,15 @@ import { getEnvVariables, updateEnvVariables } from '../controllers/settingscont
 
 const router = express.Router();
 
+router.get('/profile', authenticate, (req, res) => {
+  res.status(200).json({
+    success: true,
+    data: {
+      user: req.user
+    }
+  });
+});
+
 // All routes require admin access
 router.use(authenticate, isAdmin);
 

@@ -27,7 +27,7 @@ const cookieOptions = {
 };
 
 // Register a new user
-export const register = async (req, res) => {
+export const register = async (req, res, doNotSetCookie) => {
   try {
     const { firstName, lastName, email, password, phone } = req.body;
 
@@ -57,12 +57,15 @@ export const register = async (req, res) => {
     user.refreshToken = refreshToken;
     await user.save();
 
-    // Set cookies
-    res.cookie('token', token, cookieOptions);
-    res.cookie('refreshToken', refreshToken, {
-      ...cookieOptions,
-      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
-    });
+    if (!doNotSetCookie) {
+      // Set cookies
+      res.cookie('token', token, cookieOptions);
+      res.cookie('refreshToken', refreshToken, {
+        ...cookieOptions,
+        maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+      });
+    }
+
 
     // Welcome email
     sendMail({

@@ -68,7 +68,7 @@ const Profile: React.FC = () => {
           </div>
         )}
 
-        {/* Security Settings */}
+
         <div>
           <h2 className="text-2xl font-semibold text-gray-800 mb-4">Security Settings</h2>
           <div className="flex items-center justify-between bg-gray-50 p-4 rounded-lg">

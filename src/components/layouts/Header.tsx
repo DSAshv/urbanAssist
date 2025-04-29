@@ -1,11 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { messaging, getToken, onMessage } from '../../firebase'; // import from firebase.ts
 import { Link, useNavigate } from 'react-router-dom';
-import { 
-  Menu, Bell, UserCircle, Search, LogOut, Settings, User, 
-  ChevronDown, AlertTriangle, Check, X, MenuIcon 
-} from 'lucide-react';
+import { Menu, Bell, UserCircle, Search, LogOut, Settings, User, ChevronDown, AlertTriangle, Check, X, MenuIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
+
+interface Notification {
+  id: string;
+  message: string;
+  type: 'status' | 'comment' | 'resolved';
+  read: boolean;
+  time: string;
+}
 
 interface HeaderProps {
   toggleSidebar: () => void;
@@ -16,36 +22,11 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, isAdmin = false }) => {
   const { authState, logout } = useAuth();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  // Mock notifications for demo
-  const notifications = [
-    {
-      id: '1',
-      message: 'Your complaint has been updated to "In Progress"',
-      type: 'status',
-      read: false,
-      time: '15 min ago'
-    },
-    {
-      id: '2',
-      message: 'Administrator added a comment to your complaint',
-      type: 'comment',
-      read: false,
-      time: '2 hours ago'
-    },
-    {
-      id: '3',
-      message: 'Your complaint has been resolved',
-      type: 'resolved',
-      read: true,
-      time: '1 day ago'
-    }
-  ];
-
-  // Handle clicks outside to close dropdowns
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
@@ -55,14 +36,46 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, isAdmin = false }) => {
         setNotificationsOpen(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
-  // Handle logout
+  useEffect(() => {
+    const requestPermission = async () => {
+      try {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          const token = await getToken(messaging, { vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY });
+        } else {
+          console.warn('Notification permission not granted.');
+        }
+      } catch (error) {
+        console.error('Error getting FCM token:', error);
+      }
+    };
+
+    requestPermission();
+
+    const unsubscribe = onMessage(messaging, (payload) => {
+      console.log('Message received. ', payload);
+      const { title, body } = payload.notification!;
+      const newNotification: Notification = {
+        id: new Date().getTime().toString(),
+        message: body || '',
+        type: 'status', // You can customize type based on payload data
+        read: false,
+        time: 'just now',
+      };
+      setNotifications((prev) => [newNotification, ...prev]);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -73,6 +86,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, isAdmin = false }) => {
   };
 
   return (
+
     <header className="bg-white shadow-sm fixed w-full z-20">
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
@@ -91,6 +105,20 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, isAdmin = false }) => {
           </div>
 
           <div className="flex items-center">
+            <div className="hidden md:flex items-center space-x-4">
+
+
+              {/* Admin/User toggle button */}
+              {authState.user?.role === 'admin' && (
+                <Link
+                  to={isAdmin ? '/app/dashboard' : '/admin/dashboard'}
+                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  {isAdmin ? 'Switch to User View' : 'Go To Admin Console'}
+                </Link>
+              )}
+            </div>
+
             {/* Search box - visible on larger screens */}
             <div className="hidden md:block relative mx-4">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -136,9 +164,8 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, isAdmin = false }) => {
                           notifications.map((notification) => (
                             <div
                               key={notification.id}
-                              className={`px-4 py-3 hover:bg-gray-50 ${
-                                !notification.read ? 'bg-primary-50' : ''
-                              }`}
+                              className={`px-4 py-3 hover:bg-gray-50 ${!notification.read ? 'bg-primary-50' : ''
+                                }`}
                             >
                               <div className="flex items-start">
                                 <div className="flex-shrink-0 mr-3">
